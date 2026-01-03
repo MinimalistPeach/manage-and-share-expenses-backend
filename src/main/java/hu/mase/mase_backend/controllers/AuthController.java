@@ -1,5 +1,6 @@
 package hu.mase.mase_backend.controllers;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import hu.mase.mase_backend.models.dto.AuthResponse;
 import hu.mase.mase_backend.models.entity.User;
 import hu.mase.mase_backend.repositories.UserRepository;
 import hu.mase.mase_backend.utils.JwtUtil;
@@ -30,23 +32,29 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String loginByEmail(@RequestBody User user) {
+    public ResponseEntity<AuthResponse> loginByEmail(@RequestBody User user) {
         User existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser == null) {
-            return "User not found!";
+            return ResponseEntity.status(404).body(new AuthResponse("User not found!"));
         }
         
         if (!encoder.matches(user.getPassword(), existingUser.getPassword())) {
-            return "Invalid password!";
+            return ResponseEntity.status(401).body(new AuthResponse("Invalid credentials"));
         }
-        
-        return jwtUtils.generateToken(existingUser.getEmail());
+
+        String token = jwtUtils.generateToken(existingUser.getEmail());
+        return ResponseEntity.ok(new AuthResponse("Login successful", token));
     }
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody User user) {
+    public ResponseEntity<AuthResponse> registerUser(@RequestBody User user) {
+        if (user == null || user.getUsername() == null || user.getUsername().isEmpty() ||
+            user.getEmail() == null || user.getEmail().isEmpty() ||
+            user.getPassword() == null || user.getPassword().isEmpty()) {
+            return ResponseEntity.badRequest().body(new AuthResponse("Missing required fields"));
+        }
         if (userRepository.existsByEmail(user.getEmail())) {
-            return "User already exists!";
+            return ResponseEntity.status(409).body(new AuthResponse("User already exists!"));
         }
 
         final User newUser = new User(
@@ -55,6 +63,6 @@ public class AuthController {
                 user.getEmail(),
                 encoder.encode(user.getPassword()));
         userRepository.save(newUser);
-        return "User registered successfully!";
+        return ResponseEntity.ok(new AuthResponse("User registered successfully!"));
     }
 }
