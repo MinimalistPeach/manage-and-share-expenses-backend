@@ -1,5 +1,7 @@
 package hu.mase.mase_backend.controllers;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,7 +45,18 @@ public class AuthController {
         }
 
         String token = jwtUtils.generateToken(existingUser.getEmail());
-        return ResponseEntity.ok(new AuthResponse("Login successful", token));
+        
+        // Set the token in a cookie
+        ResponseCookie cookie = ResponseCookie.from("token", token)
+                .httpOnly(true)
+                .secure(false) // Set to true if using HTTPS
+                .path("/")
+                .maxAge(24 * 60 * 60) // 1 day
+                .build();
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE2, cookie.toString())
+                .body(new AuthResponse("Login successful", token));
     }
 
     @PostMapping("/register")
@@ -53,7 +66,7 @@ public class AuthController {
             user.getPassword() == null || user.getPassword().isEmpty()) {
             return ResponseEntity.badRequest().body(new AuthResponse("Missing required fields"));
         }
-        if (userRepository.existsByEmail(user.getEmail())) {
+        if (userRepository.existsByEmail(user.getEmail()) || userRepository.existsByUsername(user.getUsername())) {
             return ResponseEntity.status(409).body(new AuthResponse("User already exists!"));
         }
 
