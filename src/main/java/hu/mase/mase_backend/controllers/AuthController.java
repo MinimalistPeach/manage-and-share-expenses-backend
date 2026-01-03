@@ -52,7 +52,7 @@ public class AuthController {
                 .secure(false) // Set to true if using HTTPS
                 .sameSite("Lax")
                 .path("/")
-                .maxAge(24 * 60 * 60) // 1 day
+                .maxAge(12 * 60 * 60) // 12 hours
                 .build();
         
         return ResponseEntity.ok()
