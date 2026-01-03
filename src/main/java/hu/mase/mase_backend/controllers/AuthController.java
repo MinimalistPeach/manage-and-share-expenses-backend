@@ -48,7 +48,7 @@ public class AuthController {
         
         // Set the token in a cookie
         ResponseCookie cookie = ResponseCookie.from("token", token)
-                .httpOnly(true)
+                .httpOnly(false)
                 .secure(false) // Set to true if using HTTPS
                 .sameSite("Lax")
                 .path("/")
