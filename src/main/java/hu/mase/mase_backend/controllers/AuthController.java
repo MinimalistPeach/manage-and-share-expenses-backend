@@ -1,7 +1,6 @@
 package hu.mase.mase_backend.controllers;
 
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +15,6 @@ import hu.mase.mase_backend.utils.JwtUtil;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private AuthenticationManager authenticationManager;
     private UserRepository userRepository;
     private PasswordEncoder encoder;
     private JwtUtil jwtUtils;
@@ -26,7 +24,6 @@ public class AuthController {
             UserRepository userRepository,
             PasswordEncoder encoder,
             JwtUtil jwtUtils) {
-        this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
