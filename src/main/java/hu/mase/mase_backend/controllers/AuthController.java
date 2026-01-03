@@ -50,12 +50,13 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie.from("token", token)
                 .httpOnly(true)
                 .secure(false) // Set to true if using HTTPS
+                .sameSite("Lax")
                 .path("/")
                 .maxAge(24 * 60 * 60) // 1 day
                 .build();
         
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE2, cookie.toString())
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new AuthResponse("Login successful", token));
     }
 
